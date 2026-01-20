@@ -15,7 +15,13 @@ class AdminAuthController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect('/admin/dashboard');
+            // Redirect based on role after login
+            $user = Auth::user();
+            if ($user->role === 'master_admin' || $user->role === 'admin') {
+                return redirect()->intended('/admin/dashboard');
+            } elseif ($user->role === 'user') {
+                return redirect()->intended('/user/dashboard');
+            }
         }
         return view('admin.auth.login');
     }
@@ -25,47 +31,46 @@ class AdminAuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validate incoming request data, including email, password, and the submitted role.
-        // The 'role' field is assumed to come from a dropdown in the login form.
+        // Validate incoming request data
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|min:6',
-            'role' => 'required|in:admin,user', // Assuming 'admin' and 'user' are the only valid roles
+            'password' => 'required',
+            'role' => 'required|in:master_admin,admin,user',
         ]);
 
-        // Retrieve the user based on the provided email.
+        // Find user by email
         $user = User::where('email', $request->email)->first();
 
-        // Check if user exists and if the provided password matches the stored hashed password.
+        // Check user existence and password
         if (!$user || !Hash::check($request->password, $user->password)) {
-            // If user does not exist or password does not match, return with an error.
-            return back()->withErrors(['email' => 'Invalid credentials'])->withInput();
+            return back()->withErrors(['email' => 'Invalid credentials. Please try again.'])->withInput();
         }
 
-        // Validate that the submitted role matches the user's actual role in the database.
-        // This ensures a user cannot log in with an incorrect role, even with valid credentials.
+        // Check role mismatch
         if ($user->role !== $request->role) {
-            // If roles do not match, return with an error specific to role mismatch.
-            return back()->withErrors(['role' => 'Role mismatch.'])->withInput();
+            return back()->withErrors(['role' => 'Role mismatch. Please select your correct role.'])->withInput();
         }
 
-        // Check if user is an admin or master_admin.
-        // This acts as an additional safeguard, ensuring only authorized roles proceed.
-        if ($user->role !== 'admin' && $user->role !== 'master_admin') {
-            return back()->withErrors(['email' => 'Access denied. Only admins can login'])->withInput();
-        }
-
-        // Check if user account is active.
+        // Check account status
         if ($user->status !== 'active') {
-            return back()->withErrors(['email' => 'Your account is inactive'])->withInput();
+            return back()->withErrors(['email' => 'This account is inactive. Please contact support.'])->withInput();
         }
 
-        // Log in the user and regenerate their session for security purposes.
+        // Log in the user
         Auth::login($user);
+
+        // Regenerate session
         $request->session()->regenerate();
 
-        // Redirect the authenticated admin to the admin dashboard with a success message.
-        return redirect('/admin/dashboard')->with('success', 'Welcome back, ' . $user->name);
+        // Redirect based on role
+        if ($user->role === 'master_admin' || $user->role === 'admin') {
+            return redirect()->intended('/admin/dashboard')->with('success', 'Welcome back, ' . $user->name);
+        } elseif ($user->role === 'user') {
+            return redirect()->intended('/user/dashboard')->with('success', 'Welcome back, ' . $user->name);
+        }
+
+        // Fallback redirect
+        return redirect('/login');
     }
 
     /**
@@ -73,14 +78,11 @@ class AdminAuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Log out the currently authenticated user.
         Auth::logout();
 
-        // Invalidate the session and regenerate the CSRF token to prevent session fixation attacks.
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Redirect to the general login page after successful logout using the named route.
-        return redirect()->route('login')->with('success', 'You have been logged out successfully');
+        return redirect('/login')->with('success', 'You have been logged out successfully.');
     }
 }

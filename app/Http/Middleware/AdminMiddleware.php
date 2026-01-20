@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
@@ -21,9 +22,8 @@ class AdminMiddleware
             return redirect()->route('login');
         }
 
-        // Allow only admin role.
-        // If the authenticated user does not have an 'admin' role, abort with a 403 Forbidden error.
-        if (!auth()->user()->isAdmin()) {
+        // Allow admin and master_admin roles
+        if ($request->user()->role !== 'admin' && $request->user()->role !== 'master_admin') {
             abort(403, 'Unauthorized access');
         }
 

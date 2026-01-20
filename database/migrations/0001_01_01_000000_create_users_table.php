@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // Role limited to 'admin' and 'user' per new RBAC requirements
+            $table->enum('role', ['master_admin', 'admin', 'user'])->default('user');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->rememberToken();
             $table->timestamps();
         });

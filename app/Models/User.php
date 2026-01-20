@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'status',
     ];
 
     /**
@@ -34,15 +36,55 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array<string,string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // Relationships
+    public function financialReports()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(FinancialReport::class, 'created_by');
+    }
+
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class, 'created_by');
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'created_by');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'created_by');
+    }
+
+    // Methods for role checking
+    // Role helper methods
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser()
+    {
+        return $this->role === 'user';
+    }
+
+    public function isMasterAdmin()
+    {
+        return $this->role === 'master_admin';
+    }
+
+    public function isActive()
+    {
+        return $this->status === 'active';
     }
 }

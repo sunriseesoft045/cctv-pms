@@ -327,6 +327,7 @@
                                 required
                             >
                                 <option value="">Select Role</option>
+                                <option value="master_admin" {{ old('role') == 'master_admin' ? 'selected' : '' }}>Master Admin</option>
                                 <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                                 <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
                             </select>
