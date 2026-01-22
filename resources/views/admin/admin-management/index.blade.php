@@ -9,7 +9,7 @@
             <h1><i class="fas fa-users-cog"></i> Admin Management</h1>
             <p>Manage all system administrators and their permissions</p>
         </div>
-        <a href="{{ route('admins.create') }}" class="btn btn-primary">
+        <a href="{{ route('admin.admins.create') }}" class="btn btn-primary">
             <i class="fas fa-user-plus"></i> Add New Admin
         </a>
     </div>
@@ -17,7 +17,7 @@
     <!-- Search and Filter -->
     <div class="card" style="margin-bottom: 20px;">
         <div class="card-body">
-            <form action="{{ route('admins.index') }}" method="GET" class="row g-3">
+            <form action="{{ route('admin.admins.index') }}" method="GET" class="row g-3">
                 <div class="col-md-6">
                     <input 
                         type="text" 
@@ -92,7 +92,7 @@
                             <td>
                                 <div style="display: flex; gap: 8px;">
                                     <a 
-                                        href="{{ route('admins.edit', $user->id) }}" 
+                                        href="{{ route('admin.admins.edit', $user->id) }}" 
                                         class="btn btn-sm" 
                                         style="background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; transition: all 0.3s ease;"
                                         onmouseover="this.style.background='#2980b9'"
@@ -102,7 +102,7 @@
                                     </a>
 
                                     @if($user->id !== auth()->id())
-                                        <form action="{{ route('admins.destroy', $user->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure? This action cannot be undone.');">
+                                        <form action="{{ route('admin.admins.destroy', $user->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure? This action cannot be undone.');">
                                             @csrf
                                             @method('DELETE')
                                             <button 

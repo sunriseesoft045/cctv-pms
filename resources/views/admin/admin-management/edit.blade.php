@@ -16,7 +16,7 @@
                     <i class="fas fa-user-check"></i> User Details
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admins.update', $user) }}" method="POST">
+                    <form action="{{ route('admin.admins.update', $user) }}" method="POST">
                         @csrf
                         @method('PUT')
 
@@ -134,7 +134,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Update User
                             </button>
-                            <a href="{{ route('admins.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('admin.admins.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to List
                             </a>
                         </div>

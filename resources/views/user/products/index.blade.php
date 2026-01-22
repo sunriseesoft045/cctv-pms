@@ -1,21 +1,12 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Products')
 @section('page-title', 'Products')
 
 @section('content')
-<div class="page-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1><i class="fas fa-box-open"></i> Products</h1>
-        <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add New Product
-        </a>
-    </div>
-</div>
-
 <div class="card">
     <div class="card-header">
-        <i class="fas fa-list"></i> All Products
+        <i class="fas fa-box-open"></i> All Products
     </div>
     <div class="card-body">
         <table class="table table-bordered table-hover">
@@ -27,7 +18,6 @@
                     <th>Unit</th>
                     <th>Price</th>
                     <th>Stock</th>
-                    <th style="width: 150px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,18 +29,10 @@
                     <td>{{ $product->unit->name ?? 'N/A' }}</td>
                     <td>{{ number_format($product->price, 2) }}</td>
                     <td>{{ $product->stock }}</td>
-                    <td>
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                        </form>
-                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center">No products found.</td>
+                    <td colspan="6" class="text-center">No products found.</td>
                 </tr>
                 @endforelse
             </tbody>

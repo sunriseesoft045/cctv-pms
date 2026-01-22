@@ -40,10 +40,10 @@
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Supplier</th>
+                                                <th>User</th>
                                                 <th>Product</th>
                                                 <th>Quantity</th>
-                                                <th>Total Price</th>
+                                                <th>Total Cost</th>
                                                 <th>Date</th>
                                                 <th>Actions</th>
                                             </tr>
@@ -52,10 +52,10 @@
                                             @foreach($pendingPurchases as $purchase)
                                                 <tr>
                                                     <td>{{ $purchase->id }}</td>
-                                                    <td>{{ $purchase->supplier_name }}</td> {{-- Assuming a supplier_name field --}}
-                                                    <td>{{ $purchase->product_name }}</td> {{-- Assuming a product_name field --}}
+                                                    <td>{{ $purchase->user->name ?? 'N/A' }}</td>
+                                                    <td>{{ $purchase->product->name ?? 'N/A' }}</td>
                                                     <td>{{ $purchase->quantity }}</td>
-                                                    <td>{{ number_format($purchase->total_price, 2) }}</td>
+                                                    <td>{{ number_format($purchase->cost * $purchase->quantity, 2) }}</td>
                                                     <td>{{ $purchase->created_at->format('M d, Y') }}</td>
                                                     <td>
                                                         <form action="{{ route('admin.approvals.purchase.approve', $purchase->id) }}" method="POST" style="display: inline-block;">
@@ -90,7 +90,7 @@
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
-                                                <th>Customer</th>
+                                                <th>User</th>
                                                 <th>Product</th>
                                                 <th>Quantity</th>
                                                 <th>Total Price</th>
@@ -102,10 +102,10 @@
                                             @foreach($pendingSales as $sale)
                                                 <tr>
                                                     <td>{{ $sale->id }}</td>
-                                                    <td>{{ $sale->customer_name }}</td> {{-- Assuming a customer_name field --}}
-                                                    <td>{{ $sale->product_name }}</td> {{-- Assuming a product_name field --}}
+                                                    <td>{{ $sale->user->name ?? 'N/A' }}</td>
+                                                    <td>{{ $sale->product->name ?? 'N/A' }}</td>
                                                     <td>{{ $sale->quantity }}</td>
-                                                    <td>{{ number_format($sale->total_price, 2) }}</td>
+                                                    <td>{{ number_format($sale->price * $sale->quantity, 2) }}</td>
                                                     <td>{{ $sale->created_at->format('M d, Y') }}</td>
                                                     <td>
                                                         <form action="{{ route('admin.approvals.sale.approve', $sale->id) }}" method="POST" style="display: inline-block;">

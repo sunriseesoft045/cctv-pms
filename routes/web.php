@@ -18,6 +18,8 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CameraResourceController;
 use App\Http\Controllers\AdminPaymentController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\UnitController;
 
 // Root redirect to general login
 Route::get('/', function () {
@@ -35,19 +37,21 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 Route::resource('cameras', CameraResourceController::class);
 
 // Admin and Master Admin Protected Routes
-Route::middleware(['auth','admin'])->group(function () {
-    Route::resource('/admin/products', ProductController::class);
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::resource('/admin/admins', AdminManagementController::class)->except(['show']);
-    Route::get('/admin/approvals', [ApprovalController::class, 'index'])->name('admin.approvals.index');
-    Route::post('/admin/approvals/purchase/{id}/approve', [ApprovalController::class, 'approvePurchase'])->name('admin.approvals.purchase.approve');
-    Route::post('/admin/approvals/purchase/{id}/reject', [ApprovalController::class, 'rejectPurchase'])->name('admin.approvals.purchase.reject');
-    Route::post('/admin/approvals/sale/{id}/approve', [ApprovalController::class, 'approveSale'])->name('admin.approvals.sale.approve');
-    Route::post('/admin/approvals/sale/{id}/reject', [ApprovalController::class, 'rejectSale'])->name('admin.approvals.sale.reject');
-    Route::get('/admin/reports', [ReportsController::class, 'index'])->name('admin.reports.index');
-    Route::get('/admin/reports/{id}', [ReportsController::class, 'show'])->name('admin.reports.show');
-    Route::get('/admin/reports/export/csv', [ReportsController::class, 'export'])->name('admin.reports.export');
-    Route::get('/admin/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
+    Route::resource('/products', ProductController::class)->names('products');
+    Route::resource('/categories', CategoryController::class)->names('categories');
+    Route::resource('/units', UnitController::class)->names('units');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('/admins', AdminManagementController::class)->names('admins')->except(['show']);
+    Route::get('/approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+    Route::post('/approvals/purchase/{id}/approve', [ApprovalController::class, 'approvePurchase'])->name('approvals.purchase.approve');
+    Route::post('/approvals/purchase/{id}/reject', [ApprovalController::class, 'rejectPurchase'])->name('approvals.purchase.reject');
+    Route::post('/approvals/sale/{id}/approve', [ApprovalController::class, 'approveSale'])->name('approvals.sale.approve');
+    Route::post('/approvals/sale/{id}/reject', [ApprovalController::class, 'rejectSale'])->name('approvals.sale.reject');
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+    Route::get('/financial', [FinancialController::class, 'index'])->name('financial.index');
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
 });
 
 // User Protected Routes
@@ -55,6 +59,7 @@ Route::prefix('user')->middleware(['auth', 'user'])->name('user.')->group(functi
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
     Route::resource('purchases', PurchaseController::class);
     Route::resource('sales', SalesController::class);
+    Route::get('products', [\App\Http\Controllers\ProductController::class, 'userIndex'])->name('products.index');
     Route::resource('inventory', InventoryController::class)->parameters(['inventory' => 'product']);
     Route::resource('payments', PaymentController::class);
 });
@@ -65,11 +70,5 @@ Route::prefix('admin')->middleware(['auth', 'master-admin'])->name('admin.')->gr
     Route::put('/system-settings', [SystemSettingsController::class, 'update'])->name('system-settings.update');
     Route::get('/company-profile', [CompanyProfileController::class, 'index'])->name('company-profile.index');
     Route::put('/company-profile/{id?}', [CompanyProfileController::class, 'update'])->name('company-profile.update');
-    Route::get('/financial', [FinancialController::class, 'index'])->name('financial.index');
-    Route::get('/financial/create', [FinancialController::class, 'create'])->name('financial.create');
-    Route::post('/financial', [FinancialController::class, 'store'])->name('financial.store');
-    Route::get('/financial/{id}', [FinancialController::class, 'show'])->name('financial.show');
-    Route::get('/financial/{id}/edit', [FinancialController::class, 'edit'])->name('financial.edit');
-    Route::put('/financial/{id}', [FinancialController::class, 'update'])->name('financial.update');
-    Route::delete('/financial/{id}', [FinancialController::class, 'destroy'])->name('financial.destroy');
+
 });

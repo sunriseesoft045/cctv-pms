@@ -34,7 +34,7 @@ class UserManagementController extends Controller
         $data['status'] = 'active';
         User::create($data);
 
-        return redirect()->route('admins.index')->with('success', 'User created');
+        return redirect()->route('admin.admins.index')->with('success', 'User created');
     }
 
     /** Show edit form */
@@ -56,7 +56,7 @@ class UserManagementController extends Controller
         ]);
 
         $user->update($data);
-        return redirect()->route('admins.index')->with('success', 'User updated');
+        return redirect()->route('admin.admins.index')->with('success', 'User updated');
     }
 
     /** Delete user */
@@ -64,6 +64,6 @@ class UserManagementController extends Controller
     {
         $user = User::findOrFail($id);
         $user->delete();
-        return redirect()->route('admins.index')->with('success', 'User deleted');
+        return redirect()->route('admin.admins.index')->with('success', 'User deleted');
     }
 }

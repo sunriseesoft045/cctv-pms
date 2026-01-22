@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Purchase; // Assuming Purchase model exists for approvals
 use App\Models\Sale;     // Assuming Sale model exists for approvals
+use App\Models\Product;
 
 class ApprovalController extends Controller
 {
@@ -13,8 +14,8 @@ class ApprovalController extends Controller
      */
     public function index()
     {
-        $pendingPurchases = Purchase::where('status', 'pending')->paginate(10, ['*'], 'purchases');
-        $pendingSales = Sale::where('status', 'pending')->paginate(10, ['*'], 'sales');
+        $pendingPurchases = Purchase::with('user', 'product')->where('status', 'pending')->paginate(10, ['*'], 'purchases');
+        $pendingSales = Sale::with('user', 'product')->where('status', 'pending')->paginate(10, ['*'], 'sales');
         
         return view('admin.approvals.index', compact('pendingPurchases', 'pendingSales'));
     }
@@ -27,6 +28,12 @@ class ApprovalController extends Controller
         $purchase = Purchase::findOrFail($id);
         $purchase->status = 'approved';
         $purchase->save();
+
+        // Increment stock
+        $product = Product::find($purchase->product_id);
+        if ($product) {
+            $product->increment('stock', $purchase->quantity);
+        }
 
         return back()->with('success', 'Purchase approved successfully.');
     }
@@ -51,6 +58,19 @@ class ApprovalController extends Controller
         $sale = Sale::findOrFail($id);
         $sale->status = 'approved';
         $sale->save();
+
+        // Decrement stock
+        $product = Product::find($sale->product_id);
+        if ($product) {
+            // Ensure stock does not go below zero
+            if ($product->stock >= $sale->quantity) {
+                $product->decrement('stock', $sale->quantity);
+            } else {
+                // Optionally handle insufficient stock, e.g., log, return error
+                // For now, we'll just prevent negative stock
+                return back()->with('error', 'Insufficient stock for this sale.');
+            }
+        }
 
         return back()->with('success', 'Sale approved successfully.');
     }

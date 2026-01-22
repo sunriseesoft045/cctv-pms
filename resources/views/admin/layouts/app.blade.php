@@ -485,6 +485,27 @@
                     </li>
 
                     <li>
+                        <a href="/admin/categories" class="@if(request()->is('admin/categories*')) active @endif">
+                            <i class="fas fa-tags"></i>
+                            <span>Categories</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/admin/units" class="@if(request()->is('admin/units*')) active @endif">
+                            <i class="fas fa-ruler-combined"></i>
+                            <span>Units</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/admin/inventory" class="@if(request()->is('admin/inventory*')) active @endif">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="/admin/approvals" class="@if(request()->is('admin/approvals*')) active @endif">
                             <i class="fas fa-check-double"></i>
                             <span>Approvals</span>

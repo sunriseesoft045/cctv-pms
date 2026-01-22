@@ -4,131 +4,140 @@
 @section('page-title', 'Reports')
 
 @section('content')
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <h1><i class="fas fa-chart-bar"></i> Reports</h1>
-            <p>View and manage all system reports</p>
-        </div>
-        <a href="/admin/reports/export/csv" class="btn btn-primary">
-            <i class="fas fa-download"></i> Export to CSV
-        </a>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1><i class="fas fa-chart-bar"></i> Reports</h1>
+        <p>Live data overview of system activities</p>
     </div>
+</div>
 
-    <!-- Statistics Row -->
-    <div class="row" style="margin-bottom: 30px;">
-        <!-- Total Reports Card -->
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <div class="stat-card-title">Total Reports</div>
-                <div class="stat-card-value">{{ $totalReports }}</div>
+<!-- Statistics Row -->
+<div class="row" style="margin-bottom: 30px;">
+    <!-- Total Users Card -->
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <i class="fas fa-users"></i>
             </div>
-        </div>
-
-        <!-- Total Credit Card -->
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
-                    <i class="fas fa-arrow-up"></i>
-                </div>
-                <div class="stat-card-title">Total Credit</div>
-                <div class="stat-card-value">₨ {{ number_format($creditTotal, 2) }}</div>
-            </div>
-        </div>
-
-        <!-- Total Debit Card -->
-        <div class="col-md-4">
-            <div class="stat-card">
-                <div class="stat-card-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-                    <i class="fas fa-arrow-down"></i>
-                </div>
-                <div class="stat-card-title">Total Debit</div>
-                <div class="stat-card-value">₨ {{ number_format($debitTotal, 2) }}</div>
-            </div>
+            <div class="stat-card-title">Total Users</div>
+            <div class="stat-card-value">{{ $reports['totalUsers'] }}</div>
         </div>
     </div>
 
-    <!-- Reports Table -->
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-list"></i> All Reports
+    <!-- Total Admins Card -->
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="stat-card-title">Total Admins</div>
+            <div class="stat-card-value">{{ $reports['totalAdmins'] }}</div>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Amount</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th>Created By</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($reports as $report)
+    </div>
+
+    <!-- Total Sales Card -->
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                <i class="fas fa-cart-plus"></i>
+            </div>
+            <div class="stat-card-title">Total Sales</div>
+            <div class="stat-card-value">{{ $reports['totalSales'] }}</div>
+        </div>
+    </div>
+
+    <!-- Total Purchases Card -->
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background: linear-gradient(135deg, #f8cdda, #1d2b64);">
+                <i class="fas fa-dolly-flatbed"></i>
+            </div>
+            <div class="stat-card-title">Total Purchases</div>
+            <div class="stat-card-value">{{ $reports['totalPurchases'] }}</div>
+        </div>
+    </div>
+    
+    <!-- Total Payments Card -->
+    <div class="col-md-12" style="margin-top: 20px;">
+        <div class="stat-card">
+            <div class="stat-card-icon" style="background: linear-gradient(135deg, #ff9a9e, #fad0c4);">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-card-title">Total Payments Received</div>
+            <div class="stat-card-value">Rs {{ number_format($reports['totalPayments'], 2) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Latest Sales Table -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i> Latest Sales
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
                         <tr>
-                            <td>
-                                <strong>{{ $report->title }}</strong>
-                            </td>
-                            <td>
-                                <span style="font-weight: 600; font-size: 16px;">
-                                    ₨ {{ number_format($report->amount, 2) }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($report->type === 'credit')
-                                    <span class="badge" style="background: #d4edda; color: #155724;">
-                                        <i class="fas fa-arrow-up"></i> Credit
-                                    </span>
-                                @else
-                                    <span class="badge" style="background: #f8d7da; color: #721c24;">
-                                        <i class="fas fa-arrow-down"></i> Debit
-                                    </span>
-                                @endif
-                            </td>
-                            <td>
-                                {{ Str::limit($report->description, 50) }}
-                            </td>
-                            <td>
-                                {{ $report->createdBy->name ?? 'N/A' }}
-                            </td>
-                            <td>
-                                {{ $report->created_at->format('M d, Y H:i') }}
-                            </td>
-                            <td>
-                                <a 
-                                    href="/admin/reports/{{ $report->id }}" 
-                                    class="btn btn-sm" 
-                                    style="background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; transition: all 0.3s ease;"
-                                    onmouseover="this.style.background='#2980b9'"
-                                    onmouseout="this.style.background='#3498db'"
-                                >
-                                    <i class="fas fa-eye"></i> View
-                                </a>
-                            </td>
+                            <th>Product</th>
+                            <th>User</th>
+                            <th>Price</th>
+                            <th>Date</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px 20px;">
-                                <i class="fas fa-inbox" style="font-size: 32px; color: #bdc3c7; margin-bottom: 10px; display: block;"></i>
-                                <strong>No reports found</strong>
-                                <p style="color: #7f8c8d; margin-top: 5px;">Start by creating a new report</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        @if($reports->hasPages())
-            <div style="padding: 20px;">
-                {{ $reports->links() }}
+                    </thead>
+                    <tbody>
+                        @forelse($reports['latestSales'] as $sale)
+                            <tr>
+                                <td>{{ $sale->product->name ?? 'N/A' }}</td>
+                                <td>{{ $sale->user->name ?? 'N/A' }}</td>
+                                <td>Rs {{ number_format($sale->price, 2) }}</td>
+                                <td>{{ $sale->created_at->format('M d, Y') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center">No sales data available.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        @endif
+        </div>
     </div>
+
+    <!-- Latest Purchases Table -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i> Latest Purchases
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>User</th>
+                            <th>Cost</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($reports['latestPurchases'] as $purchase)
+                            <tr>
+                                <td>{{ $purchase->product->name ?? 'N/A' }}</td>
+                                <td>{{ $purchase->user->name ?? 'N/A' }}</td>
+                                <td>Rs {{ number_format($purchase->cost, 2) }}</td>
+                                <td>{{ $purchase->created_at->format('M d, Y') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center">No purchase data available.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

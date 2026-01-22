@@ -45,7 +45,7 @@ class AdminManagementController extends Controller
             'status' => 'active',
         ]);
 
-        return redirect()->route('admins.index')->with('success', 'Admin created successfully');
+        return redirect()->route('admin.admins.index')->with('success', 'Admin created successfully');
     }
 
     /**
@@ -82,7 +82,7 @@ class AdminManagementController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        return redirect()->route('admins.index')->with('success', 'User updated successfully');
+        return redirect()->route('admin.admins.index')->with('success', 'User updated successfully');
     }
 
     /**
@@ -98,6 +98,6 @@ class AdminManagementController extends Controller
         }
 
         $user->delete();
-        return redirect()->route('admins.index')->with('success', 'User deleted successfully');
+        return redirect()->route('admin.admins.index')->with('success', 'User deleted successfully');
     }
 }

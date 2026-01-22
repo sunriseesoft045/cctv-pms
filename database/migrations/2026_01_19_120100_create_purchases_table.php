@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('cost', 12, 2);
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
-            $table->enum('status', ['pending', 'approved'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }
