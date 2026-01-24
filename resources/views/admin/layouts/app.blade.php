@@ -471,51 +471,44 @@
                     <li style="padding: 0 20px; color: #95a5a6; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 10px;">General Management</li>
 
                     <li>
-                        <a href="/admin/admins" class="@if(request()->is('admin/admins*')) active @endif">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link @if(request()->is('admin/dashboard')) active @endif">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('admin.admins.index') }}" class="nav-link @if(request()->is('admin/admins*')) active @endif">
                             <i class="fas fa-users-cog"></i>
                             <span>Manage Users</span>
                         </a>
                     </li>
 
-                    <li>
-                        <a href="/admin/products" class="@if(request()->is('admin/products*')) active @endif">
-                            <i class="fas fa-box-open"></i>
-                            <span>Products</span>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.parts.index') }}" class="nav-link @if(request()->is('admin/parts*')) active @endif">
+                            <i class="nav-icon fas fa-cogs"></i>
+                            <p>Parts</p>
                         </a>
                     </li>
 
-                    <li>
-                        <a href="/admin/categories" class="@if(request()->is('admin/categories*')) active @endif">
-                            <i class="fas fa-tags"></i>
-                            <span>Categories</span>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.boms.index') }}" class="nav-link @if(request()->is('admin/boms*')) active @endif">
+                            <i class="nav-icon fas fa-list"></i>
+                            <p>BOM (Recipes)</p>
                         </a>
                     </li>
 
-                    <li>
-                        <a href="/admin/units" class="@if(request()->is('admin/units*')) active @endif">
-                            <i class="fas fa-ruler-combined"></i>
-                            <span>Units</span>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.assemblies.index') }}" class="nav-link @if(request()->is('admin/assemblies*')) active @endif">
+                            <i class="nav-icon fas fa-industry"></i>
+                            <p>Assembly</p>
                         </a>
                     </li>
 
-                    <li>
-                        <a href="/admin/inventory" class="@if(request()->is('admin/inventory*')) active @endif">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Inventory</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="/admin/approvals" class="@if(request()->is('admin/approvals*')) active @endif">
-                            <i class="fas fa-check-double"></i>
-                            <span>Approvals</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="/admin/reports" class="@if(request()->is('admin/reports*')) active @endif">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Reports</span>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.reports.inventory') }}" class="nav-link @if(request()->is('admin/reports*')) active @endif">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>Reports</p>
                         </a>
                     </li>
                 @endif
@@ -582,7 +575,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><h6 class="dropdown-header">Account</h6></li>
                             <li>
-                                <form action="{{ route('admin.logout') }}" method="POST" style="margin: 0;">
+                                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                                     @csrf
                                     <button type="submit" class="dropdown-item">
                                         <i class="fas fa-sign-out-alt"></i> Logout

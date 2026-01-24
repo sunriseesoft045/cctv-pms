@@ -3,93 +3,168 @@
 namespace App\Http\Controllers;
 
 use App\Models\Purchase;
-use App\Models\Product;
+use App\Models\Vendor; // New
+use App\Models\Part; // New
+use App\Models\PurchaseItem; // New
+use App\Models\PartStock; // New
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // New
+use Illuminate\Validation\Rule; // New
 
 class PurchaseController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     * Accessible by User (own purchases) and Admin (all purchases)
+     */
     public function index()
     {
-        $purchases = Purchase::with('product', 'user')
-            ->where('created_by', Auth::id())
+        $purchases = \App\Models\Purchase::where('created_by', auth()->id())
             ->latest()
-            ->paginate(10);
-        
+            ->get();
+
         return view('user.purchases.index', compact('purchases'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     * Accessible only by User.
+     */
     public function create()
     {
-        $products = Product::all();
-        return view('user.purchases.create', compact('products'));
+        $parts = \App\Models\Part::orderBy('name')->get();
+        return view('user.purchases.create', compact('parts'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'cost' => 'required|numeric|min:0.01',
+        $data = $request->validate([
+            'vendor_name' => 'required|string',
+            'invoice_no' => 'required|string|unique:purchases',
+            'parts' => 'required|array',
+            'qty' => 'required|array',
+            'price' => 'required|array',
         ]);
 
-        $validated['created_by'] = Auth::id();
-        $validated['status'] = 'pending';
+        $vendor = \App\Models\Vendor::firstOrCreate(['name' => $data['vendor_name']]);
+        $total = 0;
 
-        Purchase::create($validated);
+        foreach ($request->parts as $i => $partId) {
+            $total += ($request->qty[$i] * $request->price[$i]);
+        }
+
+        $purchase = \App\Models\Purchase::create([
+            'created_by' => auth()->id(),
+            'vendor_id' => $vendor->id,
+            'invoice_no' => $data['invoice_no'],
+            'total_amount' => $total,
+            'status' => 'completed'
+        ]);
+
+        foreach ($request->parts as $i => $partId) {
+            $qty = (int)$request->qty[$i];
+            $price = (float)$request->price[$i];
+
+            $purchase->items()->create([
+                'part_id' => $partId,
+                'quantity' => $qty,
+                'price' => $price
+            ]);
+
+            // AUTO STOCK IN
+            \App\Models\Part::where('id', $partId)
+                ->increment('stock', $qty);
+        }
 
         return redirect()->route('user.purchases.index')
-            ->with('success', 'Purchase created successfully and pending for approval.');
+            ->with('success', 'Purchase created & stock updated');
     }
 
+    /**
+     * Display the specified resource.
+     * Accessible by User (own purchase) and Admin (any purchase).
+     */
     public function show(Purchase $purchase)
     {
-        $this->authorize('view', $purchase);
-        return view('user.purchases.show', compact('purchase'));
+        if (Auth::user()->role === 'user' && $purchase->created_by !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+        $purchase->load(['vendor', 'user', 'items.part']);
+        $view = Auth::user()->role === 'admin' ? 'admin.purchases.show' : 'user.purchases.show';
+        return view($view, compact('purchase'));
     }
 
-    public function edit(Purchase $purchase)
+    /**
+     * Approve a purchase order.
+     * Accessible only by Admin.
+     */
+    public function approve(Request $request, Purchase $purchase)
     {
-        $this->authorize('update', $purchase);
-        $products = Product::all();
-        return view('user.purchases.edit', compact('purchase', 'products'));
-    }
-
-    public function update(Request $request, Purchase $purchase)
-    {
-        $this->authorize('update', $purchase);
-
-        // Only allow editing if status is pending
-        if ($purchase->status !== 'pending') {
-            return redirect()->route('user.purchases.index')
-                ->with('error', 'Cannot edit approved purchases.');
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
         }
 
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'cost' => 'required|numeric|min:0.01',
+        if ($purchase->status === 'approved') {
+            return back()->with('warning', 'Purchase order is already approved.');
+        }
+
+        if ($purchase->status === 'rejected') {
+            return back()->with('warning', 'Purchase order was previously rejected. Cannot approve.');
+        }
+
+        DB::transaction(function () use ($purchase) {
+            $purchase->update(['status' => 'approved']);
+
+            foreach ($purchase->items as $item) {
+                $part = $item->part;
+                $part->increment('stock', $item->quantity);
+
+                PartStock::create([
+                    'part_id' => $part->id,
+                    'quantity' => $item->quantity,
+                    'type' => 'in',
+                    'note' => 'Purchase order #' . $purchase->invoice_no . ' approved.',
+                    'created_by' => Auth::id(),
+                ]);
+            }
+        });
+
+        return back()->with('success', 'Purchase order approved and stock updated successfully.');
+    }
+
+    /**
+     * Reject a purchase order.
+     * Accessible only by Admin.
+     */
+    public function reject(Request $request, Purchase $purchase)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($purchase->status === 'rejected') {
+            return back()->with('warning', 'Purchase order is already rejected.');
+        }
+
+        if ($purchase->status === 'approved') {
+            return back()->with('warning', 'Approved purchase orders cannot be rejected.');
+        }
+
+        $request->validate([
+            'rejection_note' => 'required|string|max:255',
         ]);
 
-        $purchase->update($validated);
+        $purchase->update([
+            'status' => 'rejected',
+            'rejection_note' => $request->rejection_note, // Assuming a 'rejection_note' column exists
+        ]);
 
-        return redirect()->route('user.purchases.index')
-            ->with('success', 'Purchase updated successfully.');
+        return back()->with('success', 'Purchase order rejected successfully.');
     }
 
-    public function destroy(Purchase $purchase)
-    {
-        $this->authorize('delete', $purchase);
-
-        // Only allow deleting if status is pending
-        if ($purchase->status !== 'pending') {
-            return redirect()->route('user.purchases.index')
-                ->with('error', 'Cannot delete approved purchases.');
-        }
-
-        $purchase->delete();
-
-        return redirect()->route('user.purchases.index')
-            ->with('success', 'Purchase deleted successfully.');
-    }
+    // Removing edit, update, destroy as per new flow
+    // public function edit(Purchase $purchase) { ... }
+    // public function update(Request $request, Purchase $purchase) { ... }
+    // public function destroy(Purchase $purchase) { ... }
 }

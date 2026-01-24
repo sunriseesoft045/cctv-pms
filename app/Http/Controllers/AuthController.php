@@ -18,38 +18,36 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    /**
-     * Process login with role selection and rate limiting
-     */
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string',
-            'role' => 'required|in:admin,user',
+            'password' => 'required',
+            'role' => 'required|in:master_admin,admin,user'
         ]);
 
-        $throttleKey = 'login|' . $request->ip() . '|' . $request->email;
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            return back()->withErrors(['email' => 'Too many login attempts. Please try again later.']);
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['email' => 'Invalid credentials']);
         }
 
-        $user = User::where('email', $request->email)->where('role', $request->role)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password) || $user->status !== 'active') {
-            RateLimiter::hit($throttleKey, 60);
-            return back()->withErrors(['email' => 'Invalid credentials or role mismatch.']);
+        if ($user->role !== $request->role) {
+            return back()->withErrors(['role' => 'Role mismatch']);
         }
 
-        Auth::login($user);
+        if ($user->status !== 'active') {
+            return back()->withErrors(['email' => 'Account inactive']);
+        }
+
+        \Illuminate\Support\Facades\Auth::login($user);
         $request->session()->regenerate();
 
-        // Redirect based on role
-        if ($user->role === 'admin') {
-            return redirect('/admin/dashboard');
-        }
-
-        return redirect('/user/dashboard');
+        return match ($user->role) {
+            'master_admin', 'admin' => redirect('/admin/dashboard'),
+            'user' => redirect('/user/dashboard'),
+            default => abort(403),
+        };
     }
 
     /**

@@ -14,23 +14,17 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Check if admin already exists
-        if (User::where('email', 'admin@cctv.com')->exists()) {
-            echo "Default Admin already exists.\n";
-            return;
-        }
-
-        // Create Default Admin
-        User::create([
-            'name' => 'Default Admin',
-            'email' => 'admin@cctv.com',
-            'password' => Hash::make('Admin@123'),
-            'role' => 'admin',
-            'status' => 'active',
-        ]);
-
-        echo "Default Admin created successfully!\n";
-        echo "Email: admin@cctv.com\n";
-        echo "Password: Admin@123\n";
+        User::firstOrCreate(
+            ['email' => 'viveksingh12@gmail.com'],
+            [
+                'name' => 'vivek singh',
+                'password' => Hash::make('vivek123'),
+                'role' => 'admin',
+                'status' => 'active',
+            ]
+        );
+        echo "Admin User created/verified.\n";
+        echo "Email: viveksingh12@gmail.com\n";
+        echo "Password: vivek123\n";
     }
 }

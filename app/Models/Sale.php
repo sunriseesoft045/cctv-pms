@@ -7,25 +7,43 @@ use Illuminate\Database\Eloquent\Model;
 class Sale extends Model
 {
     protected $fillable = [
-        'product_id',
-        'quantity',
-        'price',
-        'created_by',
+        'customer_id',
+        'invoice_no',
+        'total_amount',
+        'gst_amount',
         'status',
+        'created_by',
     ];
 
-    public function product()
+    public function items(): HasMany
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(SaleItem::class);
     }
 
-    public function user()
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function payments()
+    public function payments(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Payment::class, 'sale_id');
+    }
+
+    // Accessor for total amount paid
+    public function getAmountPaidAttribute(): float
+    {
+        return $this->payments()->sum('amount');
+    }
+
+    // Accessor for outstanding due amount
+    public function getAmountDueAttribute(): float
+    {
+        return $this->total_amount - $this->getAmountPaidAttribute();
     }
 }
