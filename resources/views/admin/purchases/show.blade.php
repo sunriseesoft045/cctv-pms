@@ -1,4 +1,4 @@
-@extends('user.layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container-fluid">
@@ -13,8 +13,6 @@
                         <div class="col-md-4">
                             <strong>Order ID:</strong> #{{ $purchase->id }} <br>
                             <strong>Vendor:</strong> {{ $purchase->vendor->name }} <br>
-                            <strong>Vendor Phone:</strong> {{ $purchase->vendor_phone }} <br>
-                            <strong>Vendor Address:</strong> {{ $purchase->vendor_address }} <br>
                         </div>
                         <div class="col-md-4">
                             <strong>Created By:</strong> {{ $purchase->user->name }} <br>
@@ -81,7 +79,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ route('user.purchases.index') }}" class="btn btn-secondary">Back</a>
+                        <a href="{{ route('admin.purchases.index') }}" class="btn btn-secondary">Back</a>
                         <button onclick="window.print()" class="btn btn-primary">Print Invoice</button>
                     </div>
                 </div>

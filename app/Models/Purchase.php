@@ -15,6 +15,8 @@ class Purchase extends Model
         'total_amount',
         'status',
         'created_by',
+        'vendor_phone',
+        'vendor_address',
     ];
 
     public function items(): HasMany

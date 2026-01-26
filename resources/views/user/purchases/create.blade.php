@@ -13,6 +13,16 @@
 </div>
 
 <div class="form-group mb-3">
+    <label>Vendor Contact Number</label>
+    <input type="text" name="vendor_phone" class="form-control" placeholder="Enter vendor phone number" required>
+</div>
+
+<div class="form-group mb-3">
+    <label>Vendor Address</label>
+    <textarea name="vendor_address" class="form-control" placeholder="Enter vendor address" required></textarea>
+</div>
+
+<div class="form-group mb-3">
   <label>Invoice Number</label>
   <input type="text" name="invoice_no" class="form-control" value="INV-{{ time() }}" required>
 </div>

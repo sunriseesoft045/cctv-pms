@@ -92,7 +92,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 Route::prefix('user')->middleware(['auth', 'user'])->name('user.')->group(function() {
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
     Route::resource('purchases', PurchaseController::class);
-    Route::resource('sales', SalesController::class);
+    Route::resource('sales', \App\Http\Controllers\User\SalesController::class);
     Route::get('products', [\App\Http\Controllers\ProductController::class, 'userIndex'])->name('products.index');
     Route::resource('inventory', InventoryController::class)->parameters(['inventory' => 'product']);
     Route::resource('payments', PaymentController::class);

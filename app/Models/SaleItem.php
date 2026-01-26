@@ -20,7 +20,7 @@ class SaleItem extends Model
     /**
      * Get the finished product associated with the sale item.
      */
-    public function product(): BelongsTo
+    public function finishedProduct(): BelongsTo
     {
         return $this->belongsTo(FinishedProduct::class, 'finished_product_id');
     }

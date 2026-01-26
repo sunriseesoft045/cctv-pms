@@ -1,147 +1,116 @@
 @extends('user.layouts.app')
-@section('page-title', 'Edit Sale')
+
 @section('content')
 <div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="fas fa-edit"></i> Edit Sale</h2>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('user.sales.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </a>
-        </div>
-    </div>
+    <h3>Edit Sale</h3>
 
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Error!</strong> Please fix the following errors:
-            <ul class="mb-0 mt-2">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+    <form action="{{ route('user.sales.update', $sale->id) }}" method="POST">
+        @csrf
+        @method('PUT')
+
+        <div class="form-group mb-3">
+            <label for="customer_id">Customer</label>
+            <select name="customer_id" id="customer_id" class="form-control" required>
+                @foreach($customers as $customer)
+                <option value="{{ $customer->id }}" {{ $sale->customer_id == $customer->id ? 'selected' : '' }}>
+                    {{ $customer->name }}
+                </option>
                 @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </select>
         </div>
-    @endif
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Sale #{{ $sale->id }} Details</h5>
-                </div>
-                <div class="card-body">
-                    @if($sale->status !== 'pending')
-                        <div class="alert alert-warning">
-                            <strong>Note:</strong> This sale has been {{ $sale->status }}. You can only edit pending sales.
-                        </div>
-                    @endif
-
-                    <form action="{{ route('user.sales.update', $sale->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="mb-3">
-                            <label for="product_id" class="form-label">Product <span class="text-danger">*</span></label>
-                            <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror" {{ $sale->status !== 'pending' ? 'disabled' : 'required' }}>
-                                <option value="">-- Select Product --</option>
-                                @foreach($products as $product)
-                                    <option value="{{ $product->id }}" {{ $sale->product_id == $product->id ? 'selected' : '' }}>
-                                        {{ $product->name }} (SKU: {{ $product->sku }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('product_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
-                            <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" 
-                                   value="{{ old('quantity', $sale->quantity) }}" min="1" {{ $sale->status !== 'pending' ? 'disabled' : 'required' }}>
-                            @error('quantity')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="price" class="form-label">Price per Unit <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text">₹</span>
-                                <input type="number" name="price" id="price" class="form-control @error('price') is-invalid @enderror" 
-                                       value="{{ old('price', $sale->price) }}" step="0.01" min="0.01" {{ $sale->status !== 'pending' ? 'disabled' : 'required' }}>
-                            </div>
-                            @error('price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Total Price</label>
-                            <div class="input-group">
-                                <span class="input-group-text">₹</span>
-                                <input type="text" id="total_price" class="form-control" readonly value="{{ number_format($sale->quantity * $sale->price, 2) }}">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Status:</strong></p>
-                                <p>
-                                    @if($sale->status === 'pending')
-                                        <span class="badge bg-warning text-dark">Pending Approval</span>
-                                    @elseif($sale->status === 'approved')
-                                        <span class="badge bg-success">Approved</span>
-                                    @else
-                                        <span class="badge bg-secondary">{{ ucfirst($sale->status) }}</span>
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Created By:</strong></p>
-                                <p>{{ $sale->user->name }}</p>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        @if($sale->status === 'pending')
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="{{ route('user.sales.index') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Update Sale
-                                </button>
-                            </div>
-                        @else
-                            <div class="alert alert-info">
-                                Approved sales cannot be edited. Please contact administrator if changes are needed.
-                            </div>
-                            <a href="{{ route('user.sales.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to List
-                            </a>
-                        @endif
-                    </form>
-                </div>
-            </div>
+        
+        <div class="form-group mb-3">
+            <label for="status">Status</label>
+            <select name="status" class="form-control" required>
+                <option value="pending" {{ $sale->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="completed" {{ $sale->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                <option value="approved" {{ $sale->status == 'approved' ? 'selected' : '' }}>Approved</option>
+                 <option value="rejected" {{ $sale->status == 'rejected' ? 'selected' : '' }}>Rejected</option>
+            </select>
         </div>
-    </div>
+
+
+        <h4>Products</h4>
+        <table class="table table-bordered" id="products-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($sale->items as $index => $item)
+                <tr>
+                    <td>
+                        <select name="products[{{ $index }}][id]" class="form-control" required>
+                            @foreach($products as $product)
+                                <option value="{{ $product->id }}" {{ $item->finished_product_id == $product->id ? 'selected' : '' }}>
+                                    {{ $product->name }} (Stock: {{ $product->stock }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="products[{{ $index }}][quantity]" class="form-control" min="1" value="{{ $item->quantity }}" required>
+                    </td>
+                    <td>
+                        <input type="number" name="products[{{ $index }}][price]" class="form-control" min="0" step="0.01" value="{{ $item->price }}" required>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger remove-product-row">X</button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <button type="button" class="btn btn-secondary" id="add-product-row">+ Add Product</button>
+        <hr>
+
+        <button type="submit" class="btn btn-primary">Update Sale</button>
+        <a href="{{ route('user.sales.index') }}" class="btn btn-secondary">Back</a>
+    </form>
 </div>
 
 <script>
-    document.getElementById('quantity').addEventListener('input', calculateTotal);
-    document.getElementById('price').addEventListener('input', calculateTotal);
+document.addEventListener('DOMContentLoaded', function () {
+    let productRowIndex = {{ count($sale->items) }};
+    const addProductRowButton = document.getElementById('add-product-row');
+    const productsTableBody = document.querySelector('#products-table tbody');
 
-    function calculateTotal() {
-        const quantity = parseFloat(document.getElementById('quantity').value) || 0;
-        const price = parseFloat(document.getElementById('price').value) || 0;
-        const total = (quantity * price).toFixed(2);
-        document.getElementById('total_price').value = total;
-    }
+    addProductRowButton.addEventListener('click', function () {
+        const newRow = `
+            <tr>
+                <td>
+                    <select name="products[${productRowIndex}][id]" class="form-control" required>
+                        <option value="">Select Product</option>
+                        @foreach($products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }} (Stock: {{ $product->stock }})</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="products[${productRowIndex}][quantity]" class="form-control" min="1" placeholder="Quantity" required>
+                </td>
+                <td>
+                    <input type="number" name="products[${productRowIndex}][price]" class="form-control" min="0" step="0.01" placeholder="Price" required>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-product-row">X</button>
+                </td>
+            </tr>
+        `;
+        productsTableBody.insertAdjacentHTML('beforeend', newRow);
+        productRowIndex++;
+    });
 
-    calculateTotal();
+    productsTableBody.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('remove-product-row')) {
+            e.target.closest('tr').remove();
+        }
+    });
+});
 </script>
 @endsection

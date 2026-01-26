@@ -23,27 +23,30 @@
         </tr>
       </thead>
       <tbody>
-        @forelse($purchases as $p)
+        @foreach($purchases as $purchase)
         <tr>
-          <td>{{ $p->id }}</td>
-          <td>{{ $p->vendor->name ?? 'N/A' }}</td>
-          <td>₹{{ number_format($p->total_amount,2) }}</td>
-          <td>{{ $p->created_at->format('d M Y') }}</td>
+          <td>{{ $purchase->id }}</td>
+
+          <td>{{ $purchase->vendor->name ?? 'N/A' }}</td>
+
+          <td>₹{{ number_format($purchase->total_amount,2) }}</td>
+
+          <td>{{ $purchase->created_at->format('d M Y') }}</td>
+
           <td>
-            <a href='{{ route("user.purchases.show",$p->id) }}' class='btn btn-sm btn-info'>View</a>
-            <a href='{{ route("user.purchases.edit",$p->id) }}' class='btn btn-sm btn-warning'>Edit</a>
-            <form action='{{ route("user.purchases.destroy",$p->id) }}' method='POST' class='d-inline'>
+            <a href="{{ route('user.purchases.show',$purchase->id) }}" class="btn btn-info btn-sm">View</a>
+            <a href="{{ route('user.purchases.edit',$purchase->id) }}" class="btn btn-warning btn-sm">Edit</a>
+
+            <form action="{{ route('user.purchases.destroy',$purchase->id) }}" method="POST" style="display:inline;">
               @csrf
               @method('DELETE')
-              <button class='btn btn-sm btn-danger'>Delete</button>
+              <button class="btn btn-danger btn-sm" onclick="return confirm('Delete this purchase?')">
+                Delete
+              </button>
             </form>
           </td>
         </tr>
-        @empty
-        <tr>
-          <td colspan='5' class='text-center'>No purchases found</td>
-        </tr>
-        @endforelse
+        @endforeach
       </tbody>
     </table>
   </div>

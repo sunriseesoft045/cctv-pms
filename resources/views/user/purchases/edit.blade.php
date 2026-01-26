@@ -1,149 +1,114 @@
 @extends('user.layouts.app')
-@section('page-title', 'Edit Purchase')
+
 @section('content')
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="fas fa-edit"></i> Edit Purchase</h2>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('user.purchases.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </a>
-        </div>
-    </div>
+<div class="container">
+    <h2>Edit Purchase</h2>
 
-    @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Error!</strong> Please fix the following errors:
-            <ul class="mb-0 mt-2">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+    <form method="POST" action="{{ route('user.purchases.update', $purchase->id) }}">
+        @csrf
+        @method('PUT')
+
+        <div class="mb-3">
+            <label>Vendor</label>
+            <select name="vendor_id" class="form-control">
+                @foreach($vendors as $v)
+                <option value="{{ $v->id }}" {{ $purchase->vendor_id == $v->id ? 'selected' : '' }}>
+                    {{ $v->name }}
+                </option>
                 @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </select>
         </div>
-    @endif
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Purchase #{{ $purchase->id }} Details</h5>
-                </div>
-                <div class="card-body">
-                    @if($purchase->status !== 'pending')
-                        <div class="alert alert-warning">
-                            <strong>Note:</strong> This purchase has been {{ $purchase->status }}. You can only edit pending purchases.
-                        </div>
-                    @endif
-
-                    <form action="{{ route('user.purchases.update', $purchase->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="mb-3">
-                            <label for="product_id" class="form-label">Product <span class="text-danger">*</span></label>
-                            <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror" {{ $purchase->status !== 'pending' ? 'disabled' : 'required' }}>
-                                <option value="">-- Select Product --</option>
-                                @foreach($products as $product)
-                                    <option value="{{ $product->id }}" {{ $purchase->product_id == $product->id ? 'selected' : '' }}>
-                                        {{ $product->name }} (SKU: {{ $product->sku }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('product_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
-                            <input type="number" name="quantity" id="quantity" class="form-control @error('quantity') is-invalid @enderror" 
-                                   value="{{ old('quantity', $purchase->quantity) }}" min="1" {{ $purchase->status !== 'pending' ? 'disabled' : 'required' }}>
-                            @error('quantity')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="cost" class="form-label">Cost per Unit <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text">₹</span>
-                                <input type="number" name="cost" id="cost" class="form-control @error('cost') is-invalid @enderror" 
-                                       value="{{ old('cost', $purchase->cost) }}" step="0.01" min="0.01" {{ $purchase->status !== 'pending' ? 'disabled' : 'required' }}>
-                            </div>
-                            @error('cost')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Total Cost</label>
-                            <div class="input-group">
-                                <span class="input-group-text">₹</span>
-                                <input type="text" id="total_cost" class="form-control" readonly value="{{ number_format($purchase->quantity * $purchase->cost, 2) }}">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Status:</strong></p>
-                                <p>
-                                    @if($purchase->status === 'pending')
-                                        <span class="badge bg-warning text-dark">Pending Approval</span>
-                                    @elseif($purchase->status === 'approved')
-                                        <span class="badge bg-success">Approved</span>
-                                    @else
-                                        <span class="badge bg-secondary">{{ ucfirst($purchase->status) }}</span>
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-1"><strong>Created By:</strong></p>
-                                <p>{{ $purchase->user->name }}</p>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        @if($purchase->status === 'pending')
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="{{ route('user.purchases.index') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Update Purchase
-                                </button>
-                            </div>
-                        @else
-                            <div class="alert alert-info">
-                                Approved purchases cannot be edited. Please contact administrator if changes are needed.
-                            </div>
-                            <a href="{{ route('user.purchases.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to List
-                            </a>
-                        @endif
-                    </form>
-                </div>
-            </div>
+        <div class="mb-3">
+            <label>Vendor Phone</label>
+            <input type="text" name="vendor_phone" class="form-control" value="{{ $purchase->vendor_phone }}" required>
         </div>
-    </div>
+
+        <div class="mb-3">
+            <label>Vendor Address</label>
+            <textarea name="vendor_address" class="form-control" required>{{ $purchase->vendor_address }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label>Status</label>
+            <select name="status" class="form-control">
+                <option value="Pending" {{ $purchase->status=='Pending'?'selected':'' }}>Pending</option>
+                <option value="Completed" {{ $purchase->status=='Completed'?'selected':'' }}>Completed</option>
+                <option value="Approved" {{ $purchase->status=='approved'?'selected':'' }}>Approved</option>
+                <option value="Rejected" {{ $purchase->status=='rejected'?'selected':'' }}>Rejected</option>
+            </select>
+        </div>
+
+        <h4>Parts</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Part</th>
+                    <th width="150">Qty</th>
+                    <th width="150">Price</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="partsTable">
+                @foreach($purchase->items as $i => $item)
+                <tr>
+                    <td>
+                        <select name="items[{{ $i }}][part_id]" class="form-control">
+                            @foreach($parts as $p)
+                            <option value="{{ $p->id }}" {{ $item->part_id == $p->id ? 'selected' : '' }}>
+                                {{ $p->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="items[{{ $i }}][quantity]" class="form-control" value="{{ $item->quantity }}">
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" name="items[{{ $i }}][price]" class="form-control" value="{{ $item->price }}">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteRow(this)">Delete</button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <button type="button" class="btn btn-sm btn-secondary" onclick="addRow()">+ Add Part</button>
+        <br><br>
+
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{{ route('user.purchases.index') }}" class="btn btn-secondary">Back</a>
+    </form>
 </div>
 
 <script>
-    // Calculate total cost dynamically
-    document.getElementById('quantity').addEventListener('input', calculateTotal);
-    document.getElementById('cost').addEventListener('input', calculateTotal);
-
-    function calculateTotal() {
-        const quantity = parseFloat(document.getElementById('quantity').value) || 0;
-        const cost = parseFloat(document.getElementById('cost').value) || 0;
-        const total = (quantity * cost).toFixed(2);
-        document.getElementById('total_cost').value = total;
+    let row = {{ count($purchase->items) }};
+    function addRow() {
+        const table = document.getElementById('partsTable');
+        const html = `
+        <tr>
+          <td>
+            <select name="items[${row}][part_id]" class="form-control">
+              @foreach($parts as $p)
+              <option value="{{ $p->id }}">{{ $p->name }}</option>
+              @endforeach
+            </select>
+          </td>
+          <td><input type="number" name="items[${row}][quantity]" class="form-control" value="1"></td>
+          <td><input type="number" step="0.01" name="items[${row}][price]" class="form-control" value="0"></td>
+          <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="deleteRow(this)">Delete</button>
+          </td>
+        </tr>`;
+        table.insertAdjacentHTML('beforeend', html);
+        row++;
     }
 
-    // Initialize on page load
-    calculateTotal();
+    function deleteRow(btn) {
+        const row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
 </script>
 @endsection
