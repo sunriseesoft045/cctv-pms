@@ -64,8 +64,8 @@
                 <li><a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'active' : '' }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="{{ route('user.purchases.index') }}" class="{{ request()->routeIs('user.purchases.index') ? 'active' : '' }}"><i class="fas fa-dolly-flatbed"></i> Purchases</a></li>
                 <li><a href="{{ route('user.sales.index') }}" class="{{ request()->routeIs('user.sales.index') ? 'active' : '' }}"><i class="fas fa-cart-plus"></i> Sales</a></li>
-                <li><a href="{{ route('user.inventory.index') }}" class="{{ request()->routeIs('user.inventory.index') ? 'active' : '' }}"><i class="fas fa-warehouse"></i> Inventory</a></li>
-                <li><a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.index') ? 'active' : '' }}"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                <li><a href="{{ route('user.invoices.index') }}" class="{{ request()->routeIs('user.invoices.index') ? 'active' : '' }}"><i class="fas fa-file-invoice"></i> Invoices</a></li>
+                <li><a href="{{ route('user.payments.index') }}" class="{{ request()->routeIs('user.payments.index') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar"></i> Accounts</a></li>
                 <li>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
@@ -78,6 +78,8 @@
             @yield('content')
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 </html>

@@ -14,8 +14,11 @@ class UserDashboardController extends Controller
     {
         $totalPurchases = Purchase::where('created_by', Auth::id())->count();
         $totalSales = Sale::where('created_by', Auth::id())->count();
-        $totalPayments = Payment::where('created_by', Auth::id())->sum('amount');
+        
+        $totalCredit = Payment::where('user_id', Auth::id())->where('type', 'sale')->sum('amount');
+        $totalDebit = Payment::where('user_id', Auth::id())->where('type', 'purchase')->sum('amount');
+        $netBalance = $totalCredit - $totalDebit;
 
-        return view('user.dashboard', compact('totalPurchases', 'totalSales', 'totalPayments'));
+        return view('user.dashboard', compact('totalPurchases', 'totalSales', 'totalCredit', 'totalDebit', 'netBalance'));
     }
 }

@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Product; // Keep this for now if any old product data exists
-use App\Models\Part; // Corrected
-use App\Models\FinishedProduct; // Corrected
+use App\Models\Part; 
+use App\Models\FinishedProduct; 
 use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\Payment;
@@ -23,18 +22,19 @@ class DashboardController extends Controller
         // Count Statistics
         $totalAdmins = User::where('role', 'admin')->count();
         $totalUsers = User::where('role', 'user')->count();
-        // $totalProducts = Product::count(); // Old product count
 
-        // New Inventory Totals
+        // Inventory Totals
         $totalPartsStock = Part::sum('stock');
         $totalFinishedProductsStock = FinishedProduct::sum('stock');
         $totalInventoryStock = $totalPartsStock + $totalFinishedProductsStock;
 
-        // Financial Data (using new structures)
+        // Financial Data (across all users)
         $totalSalesAmount = Sale::where('status', 'approved')->sum('total_amount');
         $totalPurchasesAmount = Purchase::where('status', 'approved')->sum('total_amount');
-        $totalPaymentsReceived = Payment::where('type', 'customer')->sum('amount');
-        $totalPaymentsPaid = Payment::where('type', 'vendor')->sum('amount');
+        
+        // Payments: Sale Receipt = CREDIT, Purchase Payment = DEBIT
+        $totalCredit = Payment::where('type', 'sale')->sum('amount');
+        $totalDebit = Payment::where('type', 'purchase')->sum('amount');
 
         // Profit/Loss Analysis
         $profitLoss = $totalSalesAmount - $totalPurchasesAmount;
@@ -42,17 +42,17 @@ class DashboardController extends Controller
         // Low Stock Alerts (Parts)
         $lowStockPartsCount = Part::whereColumn('stock', '<=', 'min_stock')->count();
 
-        // Total Dues
+        // Total Dues Calculation (across all users)
         $customerDues = Sale::where('status', 'approved')
-                            ->get()
-                            ->sum(function ($sale) {
-                                return $sale->total_amount - $sale->payments()->sum('amount');
-                            });
+                            ->sum(DB::raw('total_amount - (SELECT SUM(amount) FROM payments WHERE sale_id = sales.id AND type = "sale")'));
+        
         $vendorDues = Purchase::where('status', 'approved')
-                            ->get()
-                            ->sum(function ($purchase) {
-                                return $purchase->total_amount - $purchase->payments()->sum('amount');
-                            });
+                            ->sum(DB::raw('total_amount - (SELECT SUM(amount) FROM payments WHERE purchase_id = purchases.id AND type = "purchase")'));
+        
+        // Ensure no negative dues
+        $customerDues = max(0, $customerDues);
+        $vendorDues = max(0, $vendorDues);
+
         $totalDues = $customerDues + $vendorDues;
 
         // Monthly Sales Data (This Month)
@@ -61,32 +61,20 @@ class DashboardController extends Controller
             ->whereMonth('created_at', Carbon::now()->month)
             ->sum('total_amount');
         
-        // You can keep other existing dashboard data if it still aligns with the new schema,
-        // or remove/update it as needed. For now, integrating the new requirements.
-
         return view('admin.dashboard', compact(
             'totalAdmins',
             'totalUsers',
-            'totalInventoryStock', // New
-            'totalSalesAmount', // New
-            'totalPurchasesAmount', // New
-            'totalPaymentsReceived', // New
-            'totalPaymentsPaid', // New
+            'totalInventoryStock',
+            'totalSalesAmount',
+            'totalPurchasesAmount',
+            'totalCredit', // Updated from totalPaymentsReceived
+            'totalDebit',  // Updated from totalPaymentsPaid
             'profitLoss',
-            'lowStockPartsCount', // New
-            'customerDues', // New
-            'vendorDues', // New
-            'totalDues', // New
-            'currentMonthSales' // New
-            // 'totalProducts', // Old, removed
-            // 'totalStock', // Old, replaced by totalInventoryStock
-            // 'lowStockProducts', // Old, replaced by lowStockPartsCount
-            // 'monthlySales', // Old, can be kept/modified for monthly trends
-            // 'recentSales',
-            // 'recentPayments',
-            // 'lowStockAlerts',
-            // 'topProducts',
-            // 'totalPayments' // Old, replaced by totalPaymentsReceived/Paid
+            'lowStockPartsCount',
+            'customerDues',
+            'vendorDues',
+            'totalDues',
+            'currentMonthSales'
         ));
     }
 }

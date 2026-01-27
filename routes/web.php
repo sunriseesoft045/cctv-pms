@@ -94,8 +94,17 @@ Route::prefix('user')->middleware(['auth', 'user'])->name('user.')->group(functi
     Route::resource('purchases', PurchaseController::class);
     Route::resource('sales', \App\Http\Controllers\User\SalesController::class);
     Route::get('products', [\App\Http\Controllers\ProductController::class, 'userIndex'])->name('products.index');
-    Route::resource('inventory', InventoryController::class)->parameters(['inventory' => 'product']);
-    Route::resource('payments', PaymentController::class);
+    // Route::resource('inventory', InventoryController::class)->parameters(['inventory' => 'product']);
+    Route::resource('payments', \App\Http\Controllers\User\PaymentController::class);
+    Route::get('/api/purchases', [\App\Http\Controllers\User\PaymentController::class, 'fetchUserPurchases'])->name('api.purchases');
+    Route::get('/api/sales/unpaid', [\App\Http\Controllers\User\PaymentController::class, 'getUnpaidSales'])->name('api.sales.unpaid');
+
+    // Invoices
+    Route::get('/invoices', [\App\Http\Controllers\User\UserInvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/create', [\App\Http\Controllers\User\UserInvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices', [\App\Http\Controllers\User\UserInvoiceController::class, 'store'])->name('invoices.store');
+    Route::get('/invoices/{id}', [\App\Http\Controllers\User\UserInvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/invoices/{id}/pdf', [\App\Http\Controllers\User\UserInvoiceController::class, 'generatePdf'])->name('invoices.pdf');
 
     // Remove old generic Invoice and Quotation generation routes
     // Route::get('/invoice/{type}/{id}', [InvoiceController::class, 'generate'])->name('invoice.generate');

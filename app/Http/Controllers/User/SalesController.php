@@ -11,10 +11,30 @@ use Illuminate\Support\Facades\Auth;
 
 class SalesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sales = Sale::where('created_by', Auth::id())->with('customer', 'items')->latest()->get();
+        
+        if ($request->wantsJson()) {
+            return response()->json($sales);
+        }
+
         return view('user.sales.index', compact('sales'));
+    }
+
+    public function show(Request $request, $id)
+    {
+        $sale = Sale::with('customer', 'items.finishedProduct')->findOrFail($id);
+
+        if ($sale->created_by !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json($sale);
+        }
+
+        return view('user.sales.show', compact('sale'));
     }
 
     public function create()
@@ -71,19 +91,14 @@ class SalesController extends Controller
         return redirect()->route('user.sales.index')->with('success', 'Sale created successfully');
     }
 
-    public function show($id)
-    {
-        $sale = Sale::with('customer', 'items.finishedProduct')->findOrFail($id);
-        return view('user.sales.show', compact('sale'));
-    }
-
     public function edit($id)
     {
-        $sale = Sale::with('customer', 'items')->findOrFail($id);
+        $sales = Sale::with('customer', 'items')->findOrFail($id);
         $products = FinishedProduct::all();
         $customers = Customer::all();
         return view('user.sales.edit', compact('sale', 'products', 'customers'));
     }
+    
 
     public function update(Request $request, $id)
     {

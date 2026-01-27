@@ -18,9 +18,16 @@ class PurchaseController extends Controller
      * Display a listing of the resource.
      * Accessible by User (own purchases) and Admin (all purchases)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $purchases = Purchase::with('items.part','vendor')->latest()->get();
+        $purchases = Purchase::with('items.part','vendor')
+            ->where('created_by', Auth::id())
+            ->latest()->get();
+
+        if ($request->wantsJson()) {
+            return response()->json($purchases);
+        }
+        
         return view('user.purchases.index', compact('purchases'));
     }
 
@@ -86,11 +93,16 @@ class PurchaseController extends Controller
      * Display the specified resource.
      * Accessible by User (own purchase) and Admin (any purchase).
      */
-    public function show($id){
+    public function show(Request $request, $id){
         $purchase = Purchase::with('items.part','vendor')->findOrFail($id);
         if (Auth::user()->role === 'user' && $purchase->created_by !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
+
+        if ($request->wantsJson()) {
+            return response()->json($purchase);
+        }
+
         return view('user.purchases.show', compact('purchase'));
     }
 
